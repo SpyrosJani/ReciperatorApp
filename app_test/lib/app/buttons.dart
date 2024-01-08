@@ -6,27 +6,31 @@ class Button extends StatelessWidget {
   const Button({
     super.key,
     required this.type,
+    required this.label,
+    required this.onPressed,
     });
 
     final String type;
+    final String label;
+    final VoidCallback onPressed;
 
   @override
   Widget build(BuildContext context) {
     if (type == 'Back') {
       return FloatingActionButton.extended(
         backgroundColor: AppColors.primary,
-        onPressed: () {}, 
-        label: const Text('Back'), 
+        onPressed: onPressed, 
+        label: Text(label), 
         icon: const Icon(CustomIcons.BackIcon),
       );
     }
-    else if (type == 'Add Ingredient'){
+    else if (type == 'Add'){
       return FloatingActionButton.extended(
         backgroundColor: AppColors.secondary,
-        onPressed: () {}, 
-        label: const Text(
-          'Add Ingredients',
-          style: TextStyle(
+        onPressed: onPressed, 
+        label: Text(
+          label,
+          style: const TextStyle(
             color: AppColors.white
           )), 
         icon: const Icon(
@@ -36,27 +40,27 @@ class Button extends StatelessWidget {
     }
     else if (type == 'Review'){
       return ElevatedButton(
-        onPressed: () {}, 
+        onPressed: onPressed, 
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           foregroundColor: AppColors.primary,
           side: const BorderSide(color: AppColors.primary)
         ),
-        child: const Text("Review"),
+        child: Text(label),
       );
     }
     else if (type == 'Redirect'){
       return ElevatedButton(
-        onPressed: () {}, 
+        onPressed: onPressed, 
         style: ElevatedButton.styleFrom(
           backgroundColor: AppColors.onPrimary,
           foregroundColor: AppColors.primary,
         ),
-        child: const Text("Check it out"),
+        child: Text(label),
       );
     }
     return TextButton(
-      onPressed: () {},
+      onPressed: onPressed,
       child: const Text('Wrong type'), 
     );
   }
