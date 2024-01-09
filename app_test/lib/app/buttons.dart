@@ -24,6 +24,16 @@ class Button extends StatelessWidget {
         icon: const Icon(CustomIcons.BackIcon),
       );
     }
+    else if (type == 'Continue') {
+      return ElevatedButton(
+        onPressed: onPressed, 
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.white,
+          foregroundColor: Colors.black,
+        ),
+        child: Text(label),
+      );
+    }
     else if (type == 'Add'){
       return FloatingActionButton.extended(
         backgroundColor: AppColors.secondary,

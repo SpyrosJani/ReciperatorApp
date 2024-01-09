@@ -1,6 +1,7 @@
 //import 'package:app_test/app/themes.dart';
 import 'package:flutter/material.dart';
-import 'package:app_test/ui/home/home_page.dart';
+import 'package:app_test/routes/router.dart' as custom_router;
+import 'package:app_test/routes/router_constants.dart';
 
 class MyApp extends StatelessWidget {
   const MyApp ({super.key});
@@ -9,8 +10,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return const MaterialApp(
       title: 'Test App', 
-      //theme: AppThemeDataFactory.prepareThemeData(),
-      home: HomePage(title: 'Welcome, User!')
+      onGenerateRoute: custom_router.Router.generateRoute,
+      initialRoute: landing,
     );
   }
 }

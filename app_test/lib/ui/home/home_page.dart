@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:app_test/app/colors.dart';
 import 'package:app_test/app/buttons.dart';
+import 'package:app_test/ui/home/menu.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
     super.key, 
-    this.title = 'Default'
+    this.title = 'Welcome, User!',
     });
 
   final String title;
@@ -14,23 +15,29 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
+bool isOverlayVisible = false;
+
 class _HomePageState extends State<HomePage> {
+
+  
+  late OverlayEntry overlayEntry1;
   //the following overlay replaces the "add ingredient" button with the choices to either
   //add via keyboard/microphone or via camera 
+
+  void _hideOverlay(OverlayEntry overlayEntry1) {
+    isOverlayVisible = false;
+    
+    overlayEntry1.remove();
+  }
   void _showOverlay(BuildContext context) async {
 
     OverlayState? overlayState = Overlay.of(context);
-    OverlayEntry? overlayEntry1;
 
     overlayEntry1 = OverlayEntry(builder: (context) {
       return Positioned.fill(
         child:GestureDetector(
 
-          //we add the GestureDetector in order to make the overlay disappear when we press anywhere in the screen
-          onTap: () {
-            overlayEntry1?.remove();
-          },
-
+          onTap: () {_hideOverlay(overlayEntry1);},
           //the following screen dictates that the screen darkens a bit when the overlay appears 
           //and determines the position of the buttons, according to Figma 
           child: Container(
@@ -54,23 +61,24 @@ class _HomePageState extends State<HomePage> {
       );
     });
 
+    isOverlayVisible = true; 
+    debugPrint('Overlay appeared, flag is $isOverlayVisible, it must be true');
     overlayState.insertAll([overlayEntry1]); 
+    
 
   }
 
-
   @override
   Widget build(BuildContext context) {
+    debugPrint('Flag is $isOverlayVisible');
     return Scaffold(  
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(widget.title),
         backgroundColor: Colors.transparent,
-        leading: GestureDetector(
-          onTap: () {}, 
-          child: const Icon(Icons.menu))
       ), 
       backgroundColor: Colors.transparent,
+      drawer: const Menu(), 
       body: Stack(
         children: [
           Container(
@@ -88,7 +96,6 @@ class _HomePageState extends State<HomePage> {
             child: Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},))
         ]  
       ),
-      floatingActionButton: Button(type: 'Back', label:'Back', onPressed: () {}),
     );
   }
 }
