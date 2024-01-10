@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:once_again/ui/login_homepage.dart';
+import 'package:reciperator_app/routes/router.dart' as custom_router;
+import 'package:reciperator_app/routes/router_constants.dart';
 
 Widget buildBackground(Widget child) {
   return Container(
@@ -20,34 +21,6 @@ void hideKeyboard(BuildContext context) {
   FocusScope.of(context).requestFocus(FocusNode()); // Request focus on an empty FocusNode
 }
 
-/*
-showAlertDialog(BuildContext context, final x) {
-
-  // set up the button
-  Widget okButton = TextButton(
-    child: const Text("OK"),
-    onPressed: () { },
-  );
-
-  // set up the AlertDialog
-  AlertDialog alert = AlertDialog(
-    title: const Text("Problem!"),
-    content: Text(x),
-    actions: [
-      okButton,
-    ],
-  );
-
-  // show the dialog
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      return alert;
-    },
-  );
-}
-*/
-
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -62,8 +35,8 @@ class MyApp extends StatelessWidget {
         useMaterial3: true,
         scaffoldBackgroundColor: Colors.transparent,
       ),
-      //Making the background colour fading from green to black (top->bottom)
-      home: buildBackground(const LoginHomePage(title: 'Sign Up/Login')),
+      onGenerateRoute: custom_router.Router.generateRoute,
+      initialRoute: loginRoute,
     );
   }
 }

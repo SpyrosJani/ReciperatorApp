@@ -1,6 +1,6 @@
-import 'package:once_again/app/custom_icons_icons.dart';
+import 'package:reciperator_app/app/custom_icons_icons.dart';
 import 'package:flutter/material.dart';
-import 'package:once_again/app/colors.dart';
+import 'package:reciperator_app/app/colors.dart';
 
 class Button extends StatelessWidget {
   const Button({

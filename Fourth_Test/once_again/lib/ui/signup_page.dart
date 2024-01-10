@@ -1,33 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:once_again/app/textfields.dart';
-import 'package:once_again/app/buttons.dart';
-import 'package:once_again/ui/myapp.dart';
-import 'package:firebase_core/firebase_core.dart';
+import 'package:reciperator_app/app/textfields.dart';
+import 'package:reciperator_app/app/buttons.dart';
+import 'package:reciperator_app/ui/myapp.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'firebase_options.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:reciperator_app/routes/router_constants.dart';
 
 //The basic Signup Page
 class SignUpPage extends StatefulWidget {
-  const SignUpPage({super.key, required this.title});
-
-  final String title;
+  const SignUpPage({super.key});
 
   @override
   State<SignUpPage> createState() => _SignUpPageState();
 }
 
-
-//The following code in comments needs to be called every time we wanna access the database
-/*WidgetsFlutterBinding.ensureInitialized();
-await Firebase.initializeApp(
-  options: DefaultFirebaseOptions.currentPlatform,
-);*/
 class _SignUpPageState extends State<SignUpPage> {
   //Controllers to handle the text input from the user
   late final TextEditingController loginController;
   late final TextEditingController passwordController;
   late final TextEditingController passwordVerifyController;
-
 
   //initialize the controllers
   @override 
@@ -38,74 +30,100 @@ class _SignUpPageState extends State<SignUpPage> {
     super.initState();
   }
 
-  // Clean up the controller when the widget is disposed.
+  // Clean up the controllers when the widget is disposed.
   @override
   void dispose() {
     loginController.dispose();
     passwordController.dispose();
+    passwordVerifyController.dispose();
     super.dispose();
   }
 
   //Checking if there exists a user with this name, then checking if password is strong enough
   //then if both passwords are the same. Shall all the controls passed, then the user is created
   //and driven to the screen to choose food types 
-  void createuser(BuildContext context) async {
+  Future<void> createuser(BuildContext context) async {
     //Taking the values of the user 
     final username = loginController.text;
     final psw = passwordController.text;
     final vpsw = passwordVerifyController.text;
 
-    //Entering database
-    WidgetsFlutterBinding.ensureInitialized();
-    await Firebase.initializeApp(
-      options: DefaultFirebaseOptions.currentPlatform,
-    );
-  
-    //Doing the proper controls/checks
-    FirebaseFirestore firestore = FirebaseFirestore.instance;
-    QuerySnapshot querySnapshot = await firestore
-      .collection('users')
-      .where('username', isEqualTo: username)
-      .get();
-
-    if (querySnapshot.docs.isNotEmpty){
-      const x = "Another user with this name exists!";
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 5),
-          content: Text(x),
-        )
-      );
-
-      return;
-    }
-    if(psw.length < 8){
-      const x = "Password is too weak. Use at least 8 characters.";
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 5),
-          content: Text(x),
-        )
-      );
-
-      return;
-    }
+    //Checking if the 2 passwords are equal
     if(psw != vpsw){
-      const x = "Passwords don't match!";
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          duration: Duration(seconds: 5),
-          content: Text(x),
-        )
-      );
+          const SnackBar(
+            duration: Duration(seconds: 3),
+            content: Text("Passwords don't match!"),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
 
       return;
     }
-    //Now if everything is ok, we proceed to build the user
 
+    //Now we proceed to build the user for the authentication, after the right checks
+    const aux = "@reciperator.com";
+    String usremail = '$username$aux';
+    UserCredential? userCredential = null;
+    try {
+      userCredential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: usremail,
+        password: psw
+      );
+
+    } 
+    on FirebaseAuthException catch (e) {
+      debugPrint("ha");
+      if (e.code == 'weak-password') {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(seconds: 3),
+            content: Text('The password provided is too weak.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+
+      } 
+      else if (e.code == 'email-already-in-use') {
+
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            duration: Duration(seconds: 3),
+            content: Text('The account already exists for that name.'),
+            backgroundColor: Colors.red,
+            behavior: SnackBarBehavior.floating,
+          )
+        );
+
+      }
+    } 
+    catch (e) {
+      debugPrint("An error occured in the Signup page: $e");
+      return;
+    }
+
+    //And now creating the entity
+    //Instance to the collection (pretty much the matrix 'users')
+    if (userCredential != null && userCredential.user != null) {
+      CollectionReference users = FirebaseFirestore.instance.collection('users');
+      //Extracting data to make a thorough profile in the database
+      String uid = userCredential.user!.uid;
+      await users.doc(uid).set({
+        'login_id': username,
+        'password': psw,
+        'email': null,
+        'country': null,
+        'phone': null,
+        'image': null,
+      });
+
+      //If everything is ok, we navigate to the home screen
+      Navigator.pushNamed(context, knowuserRoute);
+    }
   }
 
   @override
@@ -127,39 +145,51 @@ class _SignUpPageState extends State<SignUpPage> {
             //The top bar part of the code
             //The main body of the code
             //First, i want everything to be in the center
-            body: Center(
-              child: 
-                //Everything will be within this main column, so all components will be children of this
-                Column(
-                  children:[
-                    //-----------Leave some space from the upper part-----------
-                    SizedBox(height: 0.2*h),
-                    //-----------"Welcome" text-----------
-                    const Text(
-                      "Sign Up" ,
-                      style: TextStyle(
-                        fontSize: 30,
-                        fontWeight: FontWeight.w900,
-                      )
-                    ),
-                    //-----------Some space-----------
-                    SizedBox(height: 0.02*h),
-                    //-----------Login username Textfield-----------
-                    CustomTextfield(text: 'Username', width: w, mycontroller: loginController, v: false),
-                    //-----------Some space-----------
-                    SizedBox(height: 0.02*h),
-                    //-----------Password username Textfield-----------
-                    CustomTextfield(text: 'Password', width: w, mycontroller: passwordController, v: true),
-                    //-----------Some space-----------
-                    SizedBox(height: 0.02*h),
-                    //-----------Password username Textfield-----------
-                    CustomTextfield(text: 'Verify Password', width: w, mycontroller: passwordVerifyController, v: true),
-                    //-----------Some space-----------
-                    SizedBox(height: 0.02*h),
-                    //-----------Create Account Button-----------
-                    Button (type: 'Miltos', label:'Create Account', onPressed: () async {createuser(context);}),
-                  ]
-                )
+            body: FutureBuilder(
+              future: Firebase.initializeApp(
+                options: const FirebaseOptions(
+                  apiKey: 'AIzaSyDjyww9nfeBHtHImZ1MGLS3pJ5N5UaclxI',
+                  appId: '1:1019351826894:android:678fc7a30532f4b9246b9f',
+                  messagingSenderId: '1019351826894',
+                  projectId: 'reciperator-app-main',
+                ),
+              ),
+              builder: (context, snapshot) {
+                return Center( 
+                  child: 
+                    //Everything will be within this main column, so all components will be children of this
+                    Column(
+                      children:[
+                        //-----------Leave some space from the upper part-----------
+                        SizedBox(height: 0.2*h),
+                        //-----------"Welcome" text-----------
+                        const Text(
+                          "Sign Up" ,
+                          style: TextStyle(
+                            fontSize: 30,
+                            fontWeight: FontWeight.w900,
+                          )
+                        ),
+                        //-----------Some space-----------
+                        SizedBox(height: 0.02*h),
+                        //-----------Login username Textfield-----------
+                        CustomTextfield(text: 'Username', width: w, mycontroller: loginController, v: false),
+                        //-----------Some space-----------
+                        SizedBox(height: 0.02*h),
+                        //-----------Password username Textfield-----------
+                        CustomTextfield(text: 'Password', width: w, mycontroller: passwordController, v: true),
+                        //-----------Some space-----------
+                        SizedBox(height: 0.02*h),
+                        //-----------Password username Textfield-----------
+                        CustomTextfield(text: 'Verify Password', width: w, mycontroller: passwordVerifyController, v: true),
+                        //-----------Some space-----------
+                        SizedBox(height: 0.02*h),
+                        //-----------Create Account Button-----------
+                        Button (type: 'Miltos', label:'Create Account', onPressed: () async {createuser(context);}),
+                      ]
+                    )
+                );
+              }
             )
         )
       )
