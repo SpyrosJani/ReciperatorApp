@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:app_test/app/colors.dart';
 import 'package:app_test/app/buttons.dart';
 import 'package:app_test/ui/home/menu.dart';
+import 'package:app_test/ui/home/recipe_card.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -74,7 +76,10 @@ class _HomePageState extends State<HomePage> {
     return Scaffold(  
       extendBodyBehindAppBar: true,
       appBar: AppBar(
-        title: Text(widget.title),
+        title: Text(
+          widget.title, 
+          style: const TextStyle(fontSize: 30)
+        ),
         backgroundColor: Colors.transparent,
       ), 
       backgroundColor: Colors.transparent,
@@ -90,10 +95,53 @@ class _HomePageState extends State<HomePage> {
               )
             )
           ),
+          const Positioned(
+            left: 11, 
+            top: 146,
+            child: Text(
+                  "You'll love these...",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  )
+                ),
+          ),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.only(left:17, top: 178),
+                  child: Row(
+                    children: [ 
+                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300'),
+                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300'),
+                    ]
+                  )
+                )     
+              ],
+            )
+          ),
           Positioned(
-            bottom: 107.0, 
-            right: 94.0, 
-            child: Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},))
+            bottom: 90.0,  
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              //crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Padding(
+                  padding: EdgeInsets.all(10.0),
+                  child: Text(
+                    'You have no idea what to eat?',
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                    )
+                  )
+                ),
+                Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},),
+              ],
+            )
+          )
         ]  
       ),
     );

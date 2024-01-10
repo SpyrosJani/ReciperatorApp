@@ -1,4 +1,5 @@
 import 'package:app_test/ui/home/home_page.dart';
+import 'package:app_test/ui/home/my_reviews.dart';
 import 'package:app_test/ui/profile_setup/know_the_user.dart';
 import 'package:flutter/material.dart';
 import 'package:app_test/routes/router_constants.dart';
@@ -10,6 +11,8 @@ class Router {
         return MaterialPageRoute(builder: (_) => const KnowTheUser());
       case homeRoute: 
         return MaterialPageRoute(builder: (_) => const HomePage());
+      case reviewRoute: 
+        return MaterialPageRoute(builder: (_) => const MyReviews());
       default: 
         return MaterialPageRoute( 
           builder: (_) => Scaffold (

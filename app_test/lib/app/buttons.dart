@@ -53,8 +53,8 @@ class Button extends StatelessWidget {
         onPressed: onPressed, 
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
-          foregroundColor: AppColors.primary,
-          side: const BorderSide(color: AppColors.primary)
+          foregroundColor: AppColors.onPrimary,
+          side: const BorderSide(color: AppColors.onPrimary)
         ),
         child: Text(label),
       );

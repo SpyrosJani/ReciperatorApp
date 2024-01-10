@@ -9,4 +9,5 @@ class AppColors {
   static const secondary = Color(0xFF633B48);
   static const white = Color(0xFFFFFFFF);
   static const title = Color(0xFF6750A4);
+  static const card = Color(0xFF141218);
 }
