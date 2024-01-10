@@ -48,6 +48,46 @@ class Button extends StatelessWidget {
           color: AppColors.white),
       );
     }
+    else if (type == 'Write'){
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.secondary,
+        onPressed: onPressed, 
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.white
+          )), 
+        icon: const Icon(
+          Icons.mode_edit, 
+          color: AppColors.white),
+      );
+    }
+    else if (type == 'Speak'){
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.secondary,
+        onPressed: onPressed, 
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.white
+          )), 
+        icon: const Icon(
+          Icons.mic, 
+          color: AppColors.white),
+      );
+    }
+    else if (type == 'Find'){
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.secondary,
+        onPressed: onPressed, 
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.white
+          )), 
+        
+      );
+    }
     else if (type == 'Review'){
       return ElevatedButton(
         onPressed: onPressed, 

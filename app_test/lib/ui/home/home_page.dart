@@ -1,8 +1,11 @@
+import 'package:app_test/routes/router_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:app_test/app/colors.dart';
 import 'package:app_test/app/buttons.dart';
 import 'package:app_test/ui/home/menu.dart';
 import 'package:app_test/ui/home/recipe_card.dart';
+import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
+
 
 
 class HomePage extends StatefulWidget {
@@ -23,13 +26,97 @@ class _HomePageState extends State<HomePage> {
 
   
   late OverlayEntry overlayEntry1;
+  late OverlayEntry overlayEntry2;
   //the following overlay replaces the "add ingredient" button with the choices to either
   //add via keyboard/microphone or via camera 
 
   void _hideOverlay(OverlayEntry overlayEntry1) {
-    isOverlayVisible = false;
-    
     overlayEntry1.remove();
+  }
+  void _hideReviewOverlay(OverlayEntry overlayEntry2) {
+  overlayEntry2.remove();
+  }
+
+  double rating = 0.0;
+  double prev_rating = 0.0;
+  void reviewOverlay (BuildContext context) async{
+    OverlayState? overlayState2 = Overlay.of(context);
+
+    overlayEntry2 = OverlayEntry(builder: (context) {
+
+      return GestureDetector(
+        onTap: () {}, 
+        child: Stack(
+          children: [
+            Container(
+              color: Colors.black.withOpacity(0.9),
+            ), 
+            Center(
+              child: Container(
+                
+                decoration: BoxDecoration(
+                  color: AppColors.black, 
+                  borderRadius: BorderRadius.circular(15.0), 
+                ),
+                height: 167,
+                width: 300,
+                child: Column(
+                  children: [
+                    const SizedBox(height:5),
+                    const DefaultTextStyle(
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white,
+                      ),
+                      child: Text('Rate this recipe:',),
+                    ),
+                    const SizedBox(height:15),
+                    PannableRatingBar(
+                      rate: rating,
+                      items: List.generate(5, (index) =>
+                        const RatingWidget(
+                          selectedColor: Colors.yellow,
+                          unSelectedColor: Colors.grey,
+                          child: Icon(
+                            Icons.star,
+                            size: 48,
+                          ),
+                        )),
+                      onChanged: (value) {
+                         // the rating value is updated on tap or drag.
+                        setState(() {
+                          prev_rating = rating;
+                          rating = value;
+                          _hideReviewOverlay(overlayEntry2);
+                          reviewOverlay(context);
+                        });
+                        
+                      },
+                    ),
+                    const SizedBox(height:20),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Button(type: 'Redirect', label: 'Save', onPressed: () {_hideReviewOverlay(overlayEntry2);}),
+                        const SizedBox(width:28),
+                        Button(type: 'Review', label: 'Cancel', onPressed: () {
+                          _hideReviewOverlay(overlayEntry2);
+                          rating = prev_rating;
+                          })
+                      ],
+                    )
+                  ],
+                )
+              ),
+            )
+          ],
+        ),
+          
+        
+      );
+    });
+    overlayState2.insertAll([overlayEntry2]); 
+
   }
   void _showOverlay(BuildContext context) async {
 
@@ -49,7 +136,10 @@ class _HomePageState extends State<HomePage> {
                 Positioned(
                   left: 71.0, 
                   bottom: 200.0,
-                  child: Button(type: 'Add', label:'Add', onPressed: () {},),
+                  child: Button(type: 'Add', label:'Add', onPressed: () {
+                    _hideOverlay(overlayEntry1);
+                    Navigator.pushNamed(context, addIngredientsRoute);
+                    },),
                 ), 
                 Positioned(
                   right: 67.0, 
@@ -72,7 +162,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('Flag is $isOverlayVisible');
     return Scaffold(  
       extendBodyBehindAppBar: true,
       appBar: AppBar(
@@ -114,8 +203,8 @@ class _HomePageState extends State<HomePage> {
                   padding: const EdgeInsets.only(left:17, top: 178),
                   child: Row(
                     children: [ 
-                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300'),
-                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300'),
+                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300', overlay: () {reviewOverlay(context);}),
+                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300', overlay: () {reviewOverlay(context);}),
                     ]
                   )
                 )     

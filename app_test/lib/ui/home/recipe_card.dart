@@ -9,12 +9,14 @@ class RecipeCard extends StatelessWidget {
     required this.title,
     required this.review,
     required this.image,
+    required this.overlay,
     this.isReview = false,
     });
 
     final String title;
     final double review;
     final String image;
+    final VoidCallback overlay;
     bool isReview;
 
   @override
@@ -62,7 +64,7 @@ class RecipeCard extends StatelessWidget {
             children: [
               Padding(
                 padding: const EdgeInsets.all(4.0),
-                child: Button(type: 'Review', label: !isReview ? 'Review' : 'Write Review', onPressed: () {}),
+                child: Button(type: 'Review', label: !isReview ? 'Review' : 'Write Review', onPressed: overlay),
               ),
               Padding( 
                 padding: const EdgeInsets.all(4.0),

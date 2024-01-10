@@ -20,9 +20,9 @@ class _MyReviewsState extends State<MyReviews> {
           "My Reviews", 
           style: TextStyle(fontSize: 30)
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: AppColors.green,
       ), 
-      backgroundColor: Colors.transparent,
+      //backgroundColor: Colors.transparent,
       drawer: const Menu(), 
       body: Stack(
         children: [
@@ -43,8 +43,10 @@ class _MyReviewsState extends State<MyReviews> {
                   padding: const EdgeInsets.only(left:26, top: 138),
                   child: Column(
                     children: [ 
-                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300', isReview: true,),
-                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300', isReview: true),
+                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300', isReview: true, overlay: () {}),
+                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300', isReview: true, overlay: () {}),
+                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300', isReview: true, overlay: () {}),
+
                     ]
                   )
                 )     
