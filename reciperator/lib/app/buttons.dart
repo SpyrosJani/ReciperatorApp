@@ -48,6 +48,20 @@ class Button extends StatelessWidget {
           color: AppColors.white),
       );
     }
+    else if (type == 'Scan'){
+      return FloatingActionButton.extended(
+        backgroundColor: AppColors.secondary,
+        onPressed: onPressed, 
+        label: Text(
+          label,
+          style: const TextStyle(
+            color: AppColors.white
+          )), 
+        icon: const Icon(
+          Icons.camera, 
+          color: AppColors.white),
+      );
+    }
     else if (type == 'Write'){
       return FloatingActionButton.extended(
         backgroundColor: AppColors.secondary,
@@ -100,6 +114,16 @@ class Button extends StatelessWidget {
       );
     }
     else if (type == 'Redirect'){
+      return ElevatedButton(
+        onPressed: onPressed, 
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.onPrimary,
+          foregroundColor: AppColors.primary,
+        ),
+        child: Text(label),
+      );
+    }
+    else if (type == 'Miltos'){
       return ElevatedButton(
         onPressed: onPressed, 
         style: ElevatedButton.styleFrom(

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:reciperator/routes/router.dart' as custom_router;
 import 'package:reciperator/routes/router_constants.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
 
 Widget buildBackground(Widget child) {
   return Container(
@@ -14,6 +15,38 @@ Widget buildBackground(Widget child) {
     ),
     child: child,
   );
+}
+
+
+Future<void> reviewfun(String image, double review, String title, String uid, String link) async {
+  //Opening the reviews table
+  CollectionReference reviews = FirebaseFirestore.instance.collection('recipes');
+
+  QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+    .collection('recipes')
+    .where('user_id', isEqualTo: uid)
+    .where('link', isEqualTo: link)
+    .get();
+  
+  //If it is in this user
+  if (querySnapshot.docs.isNotEmpty) {
+    for (QueryDocumentSnapshot document in querySnapshot.docs) {
+      FirebaseFirestore.instance.collection('recipes').doc(document.id).update({
+        'review': review
+      });
+      break;
+    }
+  }
+  else{
+    //Appending a recommendation
+    await reviews.doc().set({
+      'review': review,
+      'title': title,
+      'image': image,
+      'user_id': uid,
+      'link': link,
+    });
+  }
 }
 
 void hideKeyboard(BuildContext context) {

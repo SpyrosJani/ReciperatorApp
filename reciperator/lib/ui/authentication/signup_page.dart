@@ -5,8 +5,8 @@ import 'package:reciperator/app/test_app.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:reciperator/routes/router_constants.dart';
+import 'package:reciperator/app/colors.dart';
 
-//The basic Signup Page
 class SignUpPage extends StatefulWidget {
   const SignUpPage({super.key});
 
@@ -50,16 +50,21 @@ class _SignUpPageState extends State<SignUpPage> {
     //Checking if the 2 passwords are equal
     if(psw != vpsw){
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 3),
-            content: Text("Passwords don't match!"),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          )
-        );
-
-      return;
+      showDialog(
+        context: context, 
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+            content: const Text("The passwords must match!", style:TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.promptBackground,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Got It!'))
+            ]
+          );
+        }
+      );
     }
 
     //Now we proceed to build the user for the authentication, after the right checks
@@ -76,26 +81,42 @@ class _SignUpPageState extends State<SignUpPage> {
     on FirebaseAuthException catch (e) {
       if (e.code == 'weak-password') {
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 3),
-            content: Text('The password provided is too weak.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          )
-        );
+        // ignore: use_build_context_synchronously
+        showDialog(
+        context: context, 
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+            content: const Text("The password you provided was too weak!", style:TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.promptBackground,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Got It!'))
+            ]
+          );
+        }
+      );
 
       } 
       else if (e.code == 'email-already-in-use') {
 
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 3),
-            content: Text('The account already exists for that name.'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          )
-        );
+        // ignore: use_build_context_synchronously
+        showDialog(
+        context: context, 
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+            content: const Text("An account with this email already exists!", style:TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.promptBackground,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Got It!'))
+            ]
+          );
+        }
+      );
 
       }
     } 

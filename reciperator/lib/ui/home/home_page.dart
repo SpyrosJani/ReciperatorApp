@@ -1,3 +1,4 @@
+//import 'dart:js_interop';
 import 'package:reciperator/routes/router_constants.dart';
 import 'package:flutter/material.dart';
 import 'package:reciperator/app/colors.dart';
@@ -5,7 +6,10 @@ import 'package:reciperator/app/buttons.dart';
 import 'package:reciperator/ui/home/menu.dart';
 import 'package:reciperator/app/recipe_card.dart';
 import 'package:flutter_pannable_rating_bar/flutter_pannable_rating_bar.dart';
-
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:reciperator/app/test_app.dart';
+import 'dart:math';
 
 
 class HomePage extends StatefulWidget {
@@ -39,7 +43,7 @@ class _HomePageState extends State<HomePage> {
 
   double rating = 0.0;
   double prev_rating = 0.0;
-  void reviewOverlay (BuildContext context) async{
+  void reviewOverlay (BuildContext context, String image, double review, String title, String uid, String link) async{
     OverlayState? overlayState2 = Overlay.of(context);
 
     overlayEntry2 = OverlayEntry(builder: (context) {
@@ -88,16 +92,20 @@ class _HomePageState extends State<HomePage> {
                           prev_rating = rating;
                           rating = value;
                           _hideReviewOverlay(overlayEntry2);
-                          reviewOverlay(context);
+                          reviewOverlay(context, image, review, title, uid, link);
                         });
-                        
                       },
                     ),
                     const SizedBox(height:20),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Button(type: 'Redirect', label: 'Save', onPressed: () {_hideReviewOverlay(overlayEntry2);}),
+                        Button(type: 'Redirect', label: 'Save', onPressed: () async {
+                          //Create review and insert it in database
+                          await reviewfun(image, rating, title, uid, link);
+                          _hideReviewOverlay(overlayEntry2);
+                          Navigator.pushNamed(context, reviewRoute);
+                        }),
                         const SizedBox(width:28),
                         Button(type: 'Review', label: 'Cancel', onPressed: () {
                           _hideReviewOverlay(overlayEntry2);
@@ -144,7 +152,7 @@ class _HomePageState extends State<HomePage> {
                 Positioned(
                   right: 67.0, 
                   bottom: 200.0,
-                  child: Button(type: 'Add', label:'Scan', onPressed: () {},),
+                  child: Button(type: 'Scan', label:'Scan', onPressed: () {},),
                 ),
               ],
             )
@@ -156,8 +164,46 @@ class _HomePageState extends State<HomePage> {
     isOverlayVisible = true; 
     debugPrint('Overlay appeared, flag is $isOverlayVisible, it must be true');
     overlayState.insertAll([overlayEntry1]); 
-    
+  }
 
+  Future<List<RecipeCard>?> findingrecommendations() async{
+    //First extracting all the recommendations related to this user
+    FirebaseAuth auth = FirebaseAuth.instance;
+    debugPrint("here ok");
+    List<RecipeCard> recommendations = [];
+    User? user = auth.currentUser;
+    if (user != null) {
+      String uid = user.uid;
+      QuerySnapshot querySnapshot = await FirebaseFirestore.instance
+        .collection('recipes')
+        .where('user_id', isEqualTo: uid)
+        .get();
+
+        for (QueryDocumentSnapshot document in querySnapshot.docs) {
+          
+          Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+          String titler = data['title'];
+          double reviewr = (data['review'] as num).toDouble();
+          String imager = data['image'];
+          String linkr = data['link'];
+          RecipeCard aux = RecipeCard(title: titler, review: reviewr, image: imager, 
+            overlay: () {reviewOverlay(context, imager, reviewr, titler, uid, linkr);}, link: linkr, isReview: reviewr > 0 ? true : false);
+
+          recommendations.add(aux);
+        }
+
+        Set<int> randomList = {};
+        while(randomList.length < 5){
+          randomList.add(Random().nextInt(recommendations.length));
+        }
+        List<RecipeCard> endgame = [];
+        for(int i in randomList){
+          endgame.add(recommendations[i]);
+        }
+        recommendations = endgame; 
+      }
+
+    return  recommendations;
   }
 
   @override
@@ -173,66 +219,93 @@ class _HomePageState extends State<HomePage> {
       ), 
       backgroundColor: Colors.transparent,
       drawer: const Menu(), 
-      body: Stack(
-        children: [
-          Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient( 
-                begin: Alignment.topCenter, 
-                end: Alignment.bottomCenter,
-                colors: AppColors.background,
+      body: FutureBuilder<List<RecipeCard>?>(
+        future: findingrecommendations(),
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const Center(child: CircularProgressIndicator());
+          } 
+          else if (snapshot.hasError) {
+            return Center(child: Text('Error: ${snapshot.error}'));
+          } 
+          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+            return buildBackground(const Center(
+              child: Text(
+                'No reviews yet.',
+                style: TextStyle(
+                  fontSize: 30,
+                  fontWeight: FontWeight.w900,
+                )
+                )
               )
-            )
-          ),
-          const Positioned(
-            left: 11, 
-            top: 146,
-            child: Text(
-                  "You'll love these...",
-                  style: TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                  )
-                ),
-          ),
-          SingleChildScrollView(
-            scrollDirection: Axis.horizontal,
-            child: Stack(
-              children: [
-                Padding(
-                  padding: const EdgeInsets.only(left:17, top: 178),
-                  child: Row(
-                    children: [ 
-                      RecipeCard(title: 'Spanish Tortillas', review: 4.0, image: 'https://picsum.photos/200/300', overlay: () {reviewOverlay(context);}),
-                      RecipeCard(title: 'Chocolate Pancakes', review:3.4, image: 'https://picsum.photos/200/300', overlay: () {reviewOverlay(context);}),
-                    ]
-                  )
-                )     
-              ],
-            )
-          ),
-          Positioned(
-            bottom: 90.0,  
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              //crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Padding(
-                  padding: EdgeInsets.all(10.0),
-                  child: Text(
-                    'You have no idea what to eat?',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
+            );
+          } 
+          else {
+          List<Widget> recommendationWidgets = snapshot.data!;
+          
+          return Center (
+            child:
+              Stack(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient( 
+                        begin: Alignment.topCenter, 
+                        end: Alignment.bottomCenter,
+                        colors: AppColors.background,
+                      )
+                    )
+                  ),
+                  const Positioned(
+                    left: 11, 
+                    top: 146,
+                    child: Text(
+                          "You'll love these...",
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 24,
+                          )
+                        ),
+                  ),
+                  SingleChildScrollView(
+                    scrollDirection: Axis.horizontal,
+                    child: Stack(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.only(left:17, top: 178),
+                          child: Row(
+                              children: recommendationWidgets
+                          )
+                        )     
+                      ],
+                    )
+                  ),
+                  Positioned(
+                    bottom: 90.0,  
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      //crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Padding(
+                          padding: EdgeInsets.all(10.0),
+                          child: Text(
+                            'You have no idea what to eat?',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: 24,
+                            )
+                          )
+                        ),
+                        Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},),
+                      ],
                     )
                   )
-                ),
-                Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},),
-              ],
-            )
-          )
-        ]  
-      ),
+                ]  
+              )
+          );
+          }
+        }
+      )
     );
   }
 }

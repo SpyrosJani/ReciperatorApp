@@ -4,9 +4,8 @@ import 'package:reciperator/app/buttons.dart';
 import 'package:reciperator/app/test_app.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:reciperator/routes/router_constants.dart';
+import 'package:reciperator/app/colors.dart';
 
-
-//The basic Login Page
 class LoginHomePage extends StatefulWidget {
   const LoginHomePage({super.key});
 
@@ -53,13 +52,21 @@ class _LoginHomePageState extends State<LoginHomePage> {
     } 
     on FirebaseAuthException catch (e) {
 
-      ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(
-            duration: Duration(seconds: 3),
-            content: Text('Wrong username or password'),
-            backgroundColor: Colors.red,
-            behavior: SnackBarBehavior.floating,
-          )
+      // ignore: use_build_context_synchronously
+      showDialog(
+        context: context, 
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+            content: const Text("The username or the password you provided was incorrect", style:TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.promptBackground,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Got It!'))
+            ]
+          );
+        }
       );
       
     }
@@ -101,17 +108,22 @@ class _LoginHomePageState extends State<LoginHomePage> {
                       const Text(
                         "Welcome!" ,
                         style: TextStyle(
-                          fontSize: 30,
+                          fontSize: 34,
                           fontWeight: FontWeight.w900,
                         )
                       ),
                       //-----------"Login to find the best recipes!" text-----------
-                      const Text(
-                        "Login to find the best recipes!",
-                        style: TextStyle(
-                          fontSize: 25,
-                          fontWeight: FontWeight.w900,
-                        )
+                      Container(
+                        width: MediaQuery.of(context).size.width-150,
+                        child: const Text(
+                          "Login to find the best recipes!",
+                          maxLines: 2,
+                          textAlign: TextAlign.center,
+                          style: TextStyle(
+                            fontSize: 25,
+                            fontWeight: FontWeight.w900,
+                          )
+                        ),
                       ),
                       //-----------Some space-----------
                       SizedBox(height: 0.02*h),
@@ -131,7 +143,7 @@ class _LoginHomePageState extends State<LoginHomePage> {
                       const Text(
                         "Don't have an account?",
                         style: TextStyle(
-                          fontSize: 10,
+                          fontSize: 16,
                           fontWeight: FontWeight.w900,
                         )
                       ),
@@ -144,8 +156,8 @@ class _LoginHomePageState extends State<LoginHomePage> {
                       //-----------Adding the image-----------
                       Image.asset(
                         'assets/image1.jpg', 
-                        width: 0.5*h, 
-                        height: 0.1*w, 
+                        height: 0.2*h, 
+                        width: 0.2*w, 
                       ),
                     ]
                   )

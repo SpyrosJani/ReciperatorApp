@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 
+// ignore: must_be_immutable
 class CustomTextField extends StatefulWidget {
   final TextEditingController controller;
   final FocusNode? focusNode;
-  const CustomTextField({super.key, required this.controller, required this.focusNode});
+  bool deleted;
+  CustomTextField({super.key, required this.controller, required this.focusNode, required this.deleted});
 
   @override
   State<CustomTextField> createState() => _CustomTextFieldState();
@@ -58,6 +60,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
               onPressed: () {
                 setState(() {
                   widget.controller.clear();
+                  widget.deleted = true;
                 });
               },
             )
