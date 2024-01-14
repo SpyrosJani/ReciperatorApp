@@ -23,6 +23,7 @@ class _CustomTextFieldState extends State<CustomTextField> {
   @override
   void dispose() {
     widget.controller.removeListener(_checkShowClearButton);
+    widget.controller.dispose();
     super.dispose();
   }
 

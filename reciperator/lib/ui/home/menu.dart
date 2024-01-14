@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:reciperator/app/colors.dart';
 import 'package:reciperator/app/menu_buttons.dart';
 import 'package:reciperator/routes/router_constants.dart';
-import 'package:reciperator/ui/authentication/login_homepage.dart';
 
 class Menu extends StatelessWidget {
   const Menu({super.key});
@@ -42,9 +41,8 @@ class Menu extends StatelessWidget {
               MenuButton(type: 'Home', text: 'Home Page', onTap: () {Navigator.pushNamed(context, homeRoute);}), 
               MenuButton(type: 'Profile', text: 'My Profile', onTap: () {Navigator.pushNamed(context, profileRoute);}),
               MenuButton(type: 'Reviews', text:'My Reviews', onTap: () {Navigator.pushNamed(context, reviewRoute);}), 
-              MenuButton(type: 'MealPlanner', text: 'My Meal Planner', onTap: () {}),
               MenuButton(type: 'LogOut', text: 'LogOut', onTap: () {
-                Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const LoginHomePage()));
+                Navigator.pushNamedAndRemoveUntil(context, landing, (r) => false);
               })
             ],
           )        

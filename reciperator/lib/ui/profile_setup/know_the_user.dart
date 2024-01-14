@@ -9,7 +9,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 
 
-
 class KnowTheUser extends StatefulWidget {
   const KnowTheUser({super.key});
 
@@ -126,6 +125,7 @@ class _KnowTheUserState extends State<KnowTheUser> {
         }
       }
     }
+
   }
 
   @override
@@ -136,106 +136,109 @@ class _KnowTheUserState extends State<KnowTheUser> {
       extendBodyBehindAppBar: true,
       
       backgroundColor: Colors.transparent,
-      body: FutureBuilder(
-        future: null,
-        builder: (context, snapshot) {
-          return Center(
-            child: 
-              Stack(
-            children: [
-              Container(
-                decoration: const BoxDecoration(
-                  gradient: LinearGradient( 
-                    begin: Alignment.topCenter, 
-                    end: Alignment.bottomCenter,
-                    colors: AppColors.background,
+      body: PopScope(
+        canPop: false,
+        child: FutureBuilder(
+          future: null,
+          builder: (context, snapshot) {
+            return Center(
+              child: 
+                Stack(
+              children: [
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient( 
+                      begin: Alignment.topCenter, 
+                      end: Alignment.bottomCenter,
+                      colors: AppColors.background,
+                    )
                   )
-                )
-              ),
-              Positioned(
-                top: 80, 
-                left: MediaQuery.of(context).size.width/2-123,
-                width: 246,
-                child:const Center(
-                  child:Text(
-                  'Welcome to Reciperator!',
-                    style: TextStyle(
-                      fontSize: 32.0, 
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    maxLines: 2,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center
-                  ),
                 ),
-                
-              ),
-              Positioned(
-                top: 185, 
-                left: MediaQuery.of(context).size.width/2-120, 
-                width: 240,
-                child:const Center(
-                  child: Text(
-                    'Complete this short survey to help us recommend dishes according to your tastes',
-                    style:TextStyle(
-                      fontSize: 16,
-                      color: Colors.black,
+                Positioned(
+                  top: 80, 
+                  left: MediaQuery.of(context).size.width/2-123,
+                  width: 246,
+                  child:const Center(
+                    child:Text(
+                    'Welcome to Reciperator!',
+                      style: TextStyle(
+                        fontSize: 32.0, 
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center
                     ),
-                    maxLines: 3, 
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center
-                  )
-                ) 
-              ),
-              Positioned(
-                top: 320, 
-                left: MediaQuery.of(context).size.width/2-120, 
-                width: 245,
-                child:const Center(
-                  child: Text(
-                    'What is your favorite cuisine?',
-                    style:TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.black,
-                    ),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    textAlign: TextAlign.center
-                  )
-                ) 
-              ),
-              Positioned(
-                bottom: 209, 
-                left: MediaQuery.of(context).size.width/2-52, 
-                child: Button (type: 'Continue', label:'Continue', onPressed: () async {
-                  await takingdata(helper);
-                  Navigator.pushNamed(context, homeRoute);
-                })
-              ), 
-              Positioned(
-                bottom: 300,
-                child: Container(
-                  height: 130.0,
-                  width: 353.0, 
-                  child: ListView(
-                    scrollDirection: Axis.horizontal,
-                    children: [
-                      ImageWithText(title:'Japanese', image: "https://media.istockphoto.com/id/533713646/photo/close-up-of-sashimi-sushi-set-with-chopsticks-and-soy.jpg?s=612x612&w=0&k=20&c=29ESG2HI79aNASIHBJJR3EO_Xx2Z8YvNhTn17z3lqPk=", isHighlighted: false, onTap: () {_showOverlay(context, 1, helper);}), 
-                      ImageWithText(title:'Indian', image: "https://media.istockphoto.com/id/177043240/photo/indian-butter-chicken-curry.jpg?s=612x612&w=0&k=20&c=GnqnIWq99zDdjmOWQg0L7p3eKJTQO_bxnJTVbf8PlpM=", isHighlighted: false, onTap: () {_showOverlay(context, 2, helper);}),
-                      ImageWithText(title:'Dessert', image: "https://media.istockphoto.com/id/515447912/photo/blueberry-cheesecake.jpg?s=612x612&w=0&k=20&c=y8Z7no2SEd_oKu9Ocv9uzw9i7fxc8Luy_alnNn5epqQ=", isHighlighted: false, onTap: () {_showOverlay(context, 3, helper);}),
-                      ImageWithText(title:'Mexican', image: "https://media.istockphoto.com/id/1347087219/photo/assortment-of-delicious-authentic-tacos-birria-carne-asada-adobada-cabeza-and-chicharone.jpg?s=612x612&w=0&k=20&c=8TJspKsshMc6QN8aBgnbaMgMwKKHZuLKRq8D_BYj5Tw=", isHighlighted: false, onTap: () {_showOverlay(context, 4, helper);}),
-                      ImageWithText(title:'Greek', image: "https://media.istockphoto.com/id/465142168/photo/feta-cheese-with-olives.jpg?s=612x612&w=0&k=20&c=b7bYvSBIGP0LH0PpcKZQdpiwmPpU3tYiqIYy5jyatLc=", isHighlighted: false, onTap: () {_showOverlay(context, 5, helper);}),
-                      ImageWithText(title:'Other', image: "https://media.istockphoto.com/id/516329534/photo/last-straw.jpg?s=612x612&w=0&k=20&c=q9tScD01SPtN5QNAYgWG-ot4n_4hZXOgMStuFgmBFa8=", isHighlighted: false, onTap: () {_showOverlay(context, 6, helper);}),
-                    ]
+                  ),
+                  
+                ),
+                Positioned(
+                  top: 185, 
+                  left: MediaQuery.of(context).size.width/2-120, 
+                  width: 240,
+                  child:const Center(
+                    child: Text(
+                      'Complete this short survey to help us recommend dishes according to your tastes',
+                      style:TextStyle(
+                        fontSize: 16,
+                        color: Colors.black,
+                      ),
+                      maxLines: 3, 
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center
+                    )
+                  ) 
+                ),
+                Positioned(
+                  top: 320, 
+                  left: MediaQuery.of(context).size.width/2-120, 
+                  width: 245,
+                  child:const Center(
+                    child: Text(
+                      'What is your favorite cuisine?',
+                      style:TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.black,
+                      ),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.center
+                    )
+                  ) 
+                ),
+                Positioned(
+                  bottom: 209, 
+                  left: MediaQuery.of(context).size.width/2-52, 
+                  child: Button (type: 'Continue', label:'Continue', onPressed: () async {
+                    takingdata(helper);
+                    Navigator.pushReplacementNamed(context, homeRoute);
+                  })
+                ), 
+                Positioned(
+                  bottom: 300,
+                  child: Container(
+                    height: 130.0,
+                    width: 353.0, 
+                    child: ListView(
+                      scrollDirection: Axis.horizontal,
+                      children: [
+                        ImageWithText(title:'Japanese', image: "https://media.istockphoto.com/id/533713646/photo/close-up-of-sashimi-sushi-set-with-chopsticks-and-soy.jpg?s=612x612&w=0&k=20&c=29ESG2HI79aNASIHBJJR3EO_Xx2Z8YvNhTn17z3lqPk=", isHighlighted: false, onTap: () {_showOverlay(context, 1, helper);}), 
+                        ImageWithText(title:'Indian', image: "https://media.istockphoto.com/id/177043240/photo/indian-butter-chicken-curry.jpg?s=612x612&w=0&k=20&c=GnqnIWq99zDdjmOWQg0L7p3eKJTQO_bxnJTVbf8PlpM=", isHighlighted: false, onTap: () {_showOverlay(context, 2, helper);}),
+                        ImageWithText(title:'Dessert', image: "https://media.istockphoto.com/id/515447912/photo/blueberry-cheesecake.jpg?s=612x612&w=0&k=20&c=y8Z7no2SEd_oKu9Ocv9uzw9i7fxc8Luy_alnNn5epqQ=", isHighlighted: false, onTap: () {_showOverlay(context, 3, helper);}),
+                        ImageWithText(title:'Mexican', image: "https://media.istockphoto.com/id/1347087219/photo/assortment-of-delicious-authentic-tacos-birria-carne-asada-adobada-cabeza-and-chicharone.jpg?s=612x612&w=0&k=20&c=8TJspKsshMc6QN8aBgnbaMgMwKKHZuLKRq8D_BYj5Tw=", isHighlighted: false, onTap: () {_showOverlay(context, 4, helper);}),
+                        ImageWithText(title:'Greek', image: "https://media.istockphoto.com/id/465142168/photo/feta-cheese-with-olives.jpg?s=612x612&w=0&k=20&c=b7bYvSBIGP0LH0PpcKZQdpiwmPpU3tYiqIYy5jyatLc=", isHighlighted: false, onTap: () {_showOverlay(context, 5, helper);}),
+                        ImageWithText(title:'Other', image: "https://media.istockphoto.com/id/516329534/photo/last-straw.jpg?s=612x612&w=0&k=20&c=q9tScD01SPtN5QNAYgWG-ot4n_4hZXOgMStuFgmBFa8=", isHighlighted: false, onTap: () {_showOverlay(context, 6, helper);}),
+                      ]
+                    )
                   )
                 )
-              )
-            ]  
-          ),
-          );   
-        }
+              ]  
+            ),
+            );   
+          }
+        ),
       ),
     );
   }

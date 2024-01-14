@@ -36,6 +36,7 @@ class RecipeCard extends StatelessWidget {
       }
 
       aux /= querySnapshot.docs.length;
+      aux = double.parse((aux).toStringAsFixed(2));
       
       return aux;
     } 
@@ -74,6 +75,7 @@ class RecipeCard extends StatelessWidget {
                     padding: const EdgeInsets.all(9.0),
                     child: Text(
                       title,
+                      maxLines: 1,
                       style: const TextStyle(
                         fontSize: 16,
                         color: Colors.white,

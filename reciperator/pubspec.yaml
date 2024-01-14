@@ -43,8 +43,10 @@ dependencies:
   country_icons: ^2.0.2
   flutter_pannable_rating_bar: ^2.7.2+1
   url_launcher: ^6.2.3
-  provider: ^6.1.1
-  shared_preferences: ^2.2.2
+  speech_to_text: ^6.5.1
+  camera: ^0.10.5+9
+  firebase_storage: ^11.6.0
+  audio_wave: ^0.1.5
 
 dev_dependencies:
   flutter_test:

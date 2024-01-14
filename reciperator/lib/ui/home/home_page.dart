@@ -10,6 +10,8 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:reciperator/app/test_app.dart';
 import 'dart:math';
+import 'package:reciperator/app/camera.dart'; 
+import 'package:camera/camera.dart';
 
 
 class HomePage extends StatefulWidget {
@@ -25,6 +27,7 @@ class HomePage extends StatefulWidget {
 }
 
 bool isOverlayVisible = false;
+bool isReviewOverlayVisible = false;
 
 class _HomePageState extends State<HomePage> {
 
@@ -36,9 +39,11 @@ class _HomePageState extends State<HomePage> {
 
   void _hideOverlay(OverlayEntry overlayEntry1) {
     overlayEntry1.remove();
+    isOverlayVisible = false;
   }
   void _hideReviewOverlay(OverlayEntry overlayEntry2) {
-  overlayEntry2.remove();
+    overlayEntry2.remove();
+    isReviewOverlayVisible = false;
   }
 
   double rating = 0.0;
@@ -123,6 +128,7 @@ class _HomePageState extends State<HomePage> {
         
       );
     });
+    isReviewOverlayVisible = true;
     overlayState2.insertAll([overlayEntry2]); 
 
   }
@@ -152,7 +158,12 @@ class _HomePageState extends State<HomePage> {
                 Positioned(
                   right: 67.0, 
                   bottom: 200.0,
-                  child: Button(type: 'Scan', label:'Scan', onPressed: () {},),
+                  child: Button(type: 'Scan', label:'Scan', onPressed: () async {
+                    final cameras = await availableCameras();
+                    final firstCamera = cameras.first;
+                    Navigator.push(context, MaterialPageRoute(builder: (_) => TakePictureScreen(camera: firstCamera)));
+                    _hideOverlay(overlayEntry1);
+                  },),
                 ),
               ],
             )
@@ -179,36 +190,62 @@ class _HomePageState extends State<HomePage> {
         .where('user_id', isEqualTo: uid)
         .get();
 
-        for (QueryDocumentSnapshot document in querySnapshot.docs) {
-          
+      for (QueryDocumentSnapshot document in querySnapshot.docs) {
+        
+        Map<String, dynamic> data = document.data() as Map<String, dynamic>;
+        String titler = data['title'];
+        double reviewr = (data['review'] as num).toDouble();
+        String imager = data['image'];
+        String linkr = data['link'];
+        RecipeCard aux = RecipeCard(title: titler, review: reviewr, image: imager, 
+          overlay: () {reviewOverlay(context, imager, reviewr, titler, uid, linkr);}, link: linkr, isReview: reviewr > 0 ? true : false);
+
+        recommendations.add(aux);
+      }
+
+      //checking associations
+      Set<int> randomList = {};
+      //if there are enough
+      if(recommendations.length >= 5){
+        while(randomList.length < 5){
+          randomList.add(Random().nextInt(recommendations.length));
+        }
+      } 
+      //if not enough, export from database randomly
+      else{
+        QuerySnapshot querySnapshotnew = await FirebaseFirestore.instance.collection('food').get();
+        for (QueryDocumentSnapshot document in querySnapshotnew.docs) {
+        
           Map<String, dynamic> data = document.data() as Map<String, dynamic>;
           String titler = data['title'];
-          double reviewr = (data['review'] as num).toDouble();
           String imager = data['image'];
           String linkr = data['link'];
-          RecipeCard aux = RecipeCard(title: titler, review: reviewr, image: imager, 
-            overlay: () {reviewOverlay(context, imager, reviewr, titler, uid, linkr);}, link: linkr, isReview: reviewr > 0 ? true : false);
+          RecipeCard aux = RecipeCard(title: titler, review: 0, image: imager, 
+            overlay: () {reviewOverlay(context, imager, 0, titler, uid, linkr);}, link: linkr, isReview: false);
 
           recommendations.add(aux);
         }
 
-        Set<int> randomList = {};
         while(randomList.length < 5){
           randomList.add(Random().nextInt(recommendations.length));
         }
-        List<RecipeCard> endgame = [];
-        for(int i in randomList){
-          endgame.add(recommendations[i]);
-        }
-        recommendations = endgame; 
       }
+      //finally, take the randoms
+      List<RecipeCard> endgame = [];
+      for(int i in randomList){
+        endgame.add(recommendations[i]);
+      }
+      recommendations = endgame;
+    }
 
     return  recommendations;
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(  
+    final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
+    return Scaffold( 
+      key: _scaffoldKey, 
       extendBodyBehindAppBar: true,
       appBar: AppBar(
         title: Text(
@@ -219,92 +256,105 @@ class _HomePageState extends State<HomePage> {
       ), 
       backgroundColor: Colors.transparent,
       drawer: const Menu(), 
-      body: FutureBuilder<List<RecipeCard>?>(
-        future: findingrecommendations(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } 
-          else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } 
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return buildBackground(const Center(
-              child: Text(
-                'No reviews yet.',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                )
-                )
-              )
-            );
-          } 
+      body: PopScope(
+        canPop: false,
+        onPopInvoked: (bool didPop) {
+          if(_scaffoldKey.currentState?.isDrawerOpen == true) {
+            _scaffoldKey.currentState?.openEndDrawer();
+          }
           else {
-          List<Widget> recommendationWidgets = snapshot.data!;
-          
-          return Center (
-            child:
-              Stack(
-                children: [
-                  Container(
-                    decoration: const BoxDecoration(
-                      gradient: LinearGradient( 
-                        begin: Alignment.topCenter, 
-                        end: Alignment.bottomCenter,
-                        colors: AppColors.background,
+            if (isOverlayVisible) {_hideOverlay(overlayEntry1);}
+            else if (isReviewOverlayVisible) {_hideReviewOverlay(overlayEntry2);}
+            Navigator.pushNamedAndRemoveUntil(context, landing, (r) => false);
+          }
+        },
+        child: FutureBuilder<List<RecipeCard>?>(
+          future: findingrecommendations(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } 
+            else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } 
+            else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return buildBackground(const Center(
+                child: Text(
+                  'No recommendations found.',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  )
+                  )
+                )
+              );
+            } 
+            else {
+            List<Widget> recommendationWidgets = snapshot.data!;
+            
+            return Center (
+              child:
+                Stack(
+                  children: [
+                    Container(
+                      decoration: const BoxDecoration(
+                        gradient: LinearGradient( 
+                          begin: Alignment.topCenter, 
+                          end: Alignment.bottomCenter,
+                          colors: AppColors.background,
+                        )
                       )
-                    )
-                  ),
-                  const Positioned(
-                    left: 11, 
-                    top: 146,
-                    child: Text(
-                          "You'll love these...",
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontSize: 24,
-                          )
-                        ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Stack(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.only(left:17, top: 178),
-                          child: Row(
-                              children: recommendationWidgets
-                          )
-                        )     
-                      ],
-                    )
-                  ),
-                  Positioned(
-                    bottom: 90.0,  
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      //crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Padding(
-                          padding: EdgeInsets.all(10.0),
-                          child: Text(
-                            'You have no idea what to eat?',
+                    ),
+                    const Positioned(
+                      left: 11, 
+                      top: 146,
+                      child: Text(
+                            "You'll love these...",
                             style: TextStyle(
                               color: Colors.white,
                               fontSize: 24,
                             )
-                          )
-                        ),
-                        Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},),
-                      ],
+                          ),
+                    ),
+                    SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Stack(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left:17, top: 178),
+                            child: Row(
+                                children: recommendationWidgets
+                            )
+                          )     
+                        ],
+                      )
+                    ),
+                    Positioned(
+                      bottom: 90.0,  
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        //crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Padding(
+                            padding: EdgeInsets.all(10.0),
+                            child: Text(
+                              'You have no idea what to eat?',
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 24,
+                              )
+                            )
+                          ),
+                          Button (type: 'Add', label:'Add Ingredients', onPressed: () {_showOverlay(context);},),
+                        ],
+                      )
                     )
-                  )
-                ]  
-              )
-          );
+                  ]  
+                )
+            );
+            }
           }
-        }
+        ),
       )
     );
   }

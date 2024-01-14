@@ -1,3 +1,4 @@
+import 'package:audio_wave/audio_wave.dart';
 import 'package:reciperator/app/buttons.dart';
 import 'package:reciperator/routes/router_constants.dart';
 import 'package:flutter/material.dart';
@@ -5,6 +6,9 @@ import 'package:reciperator/app/colors.dart';
 import 'package:reciperator/ui/home/menu.dart';
 import 'package:reciperator/app/text_field.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:speech_to_text/speech_to_text.dart' as stt;
+import 'dart:async';
+
 
 class AddIngredients extends StatefulWidget {
   const AddIngredients({super.key});
@@ -17,6 +21,92 @@ class _AddIngredientsState extends State<AddIngredients> {
 
   List<TextEditingController>? textControllers = [];
   FocusNode? textFieldFocusNode;
+
+  //-------MICROPHONE----------------------------
+  late OverlayEntry overlayEntry;
+  void showOverlay(BuildContext context) async {
+    OverlayState? overlayState = Overlay.of(context);
+
+    overlayEntry = OverlayEntry(builder: (context) {
+      return Container(
+        color: Colors.black.withOpacity(0.9),
+        child: Center(
+          child: AudioWave(
+            height: MediaQuery.of(context).size.height/8,
+            width: MediaQuery.of(context).size.width/2,
+            spacing: 2.5,
+            bars: [
+              AudioWaveBar(heightFactor: 0.2, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 1, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color:AppColors.primary),
+              AudioWaveBar(heightFactor: 0.2, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 1, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.2, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 1, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.2, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 0.5, color: AppColors.primary),
+              AudioWaveBar(heightFactor: 1, color: AppColors.primary),
+            ],
+          ),
+        )
+      );
+    });
+    overlayState.insertAll([overlayEntry]); 
+    
+
+  }
+
+
+  final stt.SpeechToText _speech = stt.SpeechToText();
+  bool _speechEnabled = false; 
+
+  @override 
+  void initState() {
+    super.initState();
+    if (!_speechEnabled) {
+      _initSpeech();
+    }
+  }
+
+  void _initSpeech() async {
+    _speechEnabled = await _speech.initialize();
+  }
+
+  void _listen() async {
+
+    debugPrint("////////////////////////////////////////////////We start listening///////////////////////////////////////");
+    await _speech.listen(
+      onResult: (result) {
+        setState(() {
+          textControllers!.last.text = result.recognizedWords;
+        });
+      }, 
+      listenFor: const Duration(seconds : 3), 
+      localeId: "en_En",
+      partialResults: false,
+      cancelOnError: true,
+      listenMode: stt.ListenMode.confirmation,
+    );
+    setState(() {});
+    
+    /*else {
+      setState(() {
+        _isListening = false;
+      });
+      debugPrint("Something went wrong with the mic");
+    }*/
+  }
+
+  void _stopListening() async {
+    await _speech.stop();
+    setState(() {});
+  }
+  //---------------------------------------------
 
   List<CustomTextField>? globaller = [];
   CustomTextField adding(int index) {
@@ -53,6 +143,8 @@ class _AddIngredientsState extends State<AddIngredients> {
   
     return top5Keys;
   }
+
+
 
   @override
   Widget build(BuildContext context) {
@@ -123,10 +215,18 @@ class _AddIngredientsState extends State<AddIngredients> {
                             });}),
                           const SizedBox(width: 34),
                           Button(type: 'Speak', label: 'Speak', onPressed: () {
-                            setState(() {
-                              textControllers!.add(TextEditingController());
-                              textFieldFocusNode = null;
-                            });
+                            if(_speech.isNotListening) {
+                              setState(() {
+                                textControllers!.add(TextEditingController());
+                                textFieldFocusNode = null;
+                              });
+                              showOverlay(context);
+                              _listen();
+                              Timer(const Duration(seconds: 3), () => overlayEntry.remove());
+                            }
+                            else {
+                              _stopListening();
+                            }
                           }),
                         ])
                     ),
@@ -190,11 +290,12 @@ class _AddIngredientsState extends State<AddIngredients> {
                     )
                   ],
                 ),
-              )
+              ), 
             ],
           );
         }
       ),
     );
   }
+
 }

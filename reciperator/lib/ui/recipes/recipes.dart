@@ -17,10 +17,13 @@ class Recipes extends StatefulWidget {
   State<Recipes> createState() => _RecipesState();
 }
 
+bool isReviewOverlayVisible = false;
+
 class _RecipesState extends State<Recipes> {
   late OverlayEntry overlayEntry2;
   void _hideReviewOverlay(OverlayEntry overlayEntry2) {
   overlayEntry2.remove();
+  isReviewOverlayVisible = false;
   }
 
   double rating = 0.0;
@@ -105,6 +108,7 @@ class _RecipesState extends State<Recipes> {
         
       );
     });
+    isReviewOverlayVisible = true;
     overlayState2.insertAll([overlayEntry2]); 
 
   }
@@ -155,68 +159,76 @@ class _RecipesState extends State<Recipes> {
         backgroundColor: AppColors.green,
       ), 
       drawer: const Menu(), 
-      body: FutureBuilder(
-        future: takingresults(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          } 
-          else if (snapshot.hasError) {
-            return Center(child: Text('Error: ${snapshot.error}'));
-          } 
-          else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-            return buildBackground(const Center(
-              child: Text(
-                'No reviews yet.',
-                style: TextStyle(
-                  fontSize: 30,
-                  fontWeight: FontWeight.w900,
-                )
-                )
-              )
-            );
-          } 
-          else {
-            List<Widget> recommendationWidgets = snapshot.data!;
-
-            return Stack(
-              children: [
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient( 
-                      begin: Alignment.topCenter, 
-                      end: Alignment.bottomCenter,
-                      colors: AppColors.background,
-                    )
-                  )
-                ),
-                Column(
-                  children: [
-                    SizedBox(
-                      width: MediaQuery.of(context).size.width,
-                      height: 700,
-                      child: SingleChildScrollView(
-                        scrollDirection: Axis.vertical,
-                        child: Stack(
-                          children: [
-                            Padding(
-                              padding: const EdgeInsets.only(left:26, top: 138),
-                              child: Column(
-                                children: recommendationWidgets
-                              )
-                            )     
-                          ],
-                        )
-                      ),
-                    ),
-                    const SizedBox(height:20),
-                    Button(type: 'Find', label: 'Find Another Recipe', onPressed: () {Navigator.pushNamed(context, addIngredientsRoute);})
-                  ],
-                ),
-              ]  
-            );
+      body: PopScope(
+        canPop: true, 
+        onPopInvoked: (bool didPop) {
+          if (isReviewOverlayVisible) {
+            _hideReviewOverlay(overlayEntry2);
           }
-        }
+        },
+        child: FutureBuilder(
+          future: takingresults(),
+          builder: (context, snapshot) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return const Center(child: CircularProgressIndicator());
+            } 
+            else if (snapshot.hasError) {
+              return Center(child: Text('Error: ${snapshot.error}'));
+            } 
+            else if (!snapshot.hasData || snapshot.data!.isEmpty) {
+              return buildBackground(const Center(
+                child: Text(
+                  'No recipes found.',
+                  style: TextStyle(
+                    fontSize: 30,
+                    fontWeight: FontWeight.w900,
+                  )
+                  )
+                )
+              );
+            } 
+            else {
+              List<Widget> recommendationWidgets = snapshot.data!;
+        
+              return Stack(
+                children: [
+                  Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient( 
+                        begin: Alignment.topCenter, 
+                        end: Alignment.bottomCenter,
+                        colors: AppColors.background,
+                      )
+                    )
+                  ),
+                  Column(
+                    children: [
+                      SizedBox(
+                        width: MediaQuery.of(context).size.width,
+                        height: 700,
+                        child: SingleChildScrollView(
+                          scrollDirection: Axis.vertical,
+                          child: Stack(
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.only(left:26, top: 138),
+                                child: Column(
+                                  children: recommendationWidgets
+                                )
+                              )     
+                            ],
+                          )
+                        ),
+                      ),
+                      const SizedBox(height:20),
+                      Button(type: 'Find', label: 'Find Another Recipe', onPressed: () {Navigator.pushNamed(context, addIngredientsRoute);})
+                    ],
+                  ),
+                ]  
+              );
+            }
+          }
+        ),
       ),
     );
   }

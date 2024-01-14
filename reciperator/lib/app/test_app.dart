@@ -9,7 +9,7 @@ Widget buildBackground(Widget child) {
       gradient: LinearGradient(
         begin: Alignment.topCenter,
         end: Alignment.bottomCenter,
-        colors: [Colors.green, Colors.black],
+        colors: [Color(0xFF3CEE39), Color(0xFF000000)],
         tileMode: TileMode.clamp,
       ),
     ),
@@ -73,3 +73,4 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+

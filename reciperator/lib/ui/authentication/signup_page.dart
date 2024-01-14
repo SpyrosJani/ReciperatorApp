@@ -65,6 +65,29 @@ class _SignUpPageState extends State<SignUpPage> {
           );
         }
       );
+
+      return;
+    }
+
+    if(username.isEmpty || username.contains(' ')){
+      
+      showDialog(
+        context: context, 
+        builder: (BuildContext context) {
+          return AlertDialog(
+            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+            content: const Text("Wrong username. The username must not contain spaces", style:TextStyle(color: Colors.white)),
+            backgroundColor: AppColors.promptBackground,
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, 'OK'),
+                child: const Text('Got It!'))
+            ]
+          );
+        }
+      );
+
+      return;
     }
 
     //Now we proceed to build the user for the authentication, after the right checks
@@ -83,20 +106,22 @@ class _SignUpPageState extends State<SignUpPage> {
 
         // ignore: use_build_context_synchronously
         showDialog(
-        context: context, 
-        builder: (BuildContext context) {
-          return AlertDialog(
-            title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
-            content: const Text("The password you provided was too weak!", style:TextStyle(color: Colors.white)),
-            backgroundColor: AppColors.promptBackground,
-            actions: [
-              TextButton(
-                onPressed: () => Navigator.pop(context, 'OK'),
-                child: const Text('Got It!'))
-            ]
-          );
-        }
-      );
+          context: context, 
+          builder: (BuildContext context) {
+            return AlertDialog(
+              title: const Text("Invalid Credentials", style:TextStyle(color: Colors.white)), 
+              content: const Text("The password you provided was too weak!", style:TextStyle(color: Colors.white)),
+              backgroundColor: AppColors.promptBackground,
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context, 'OK'),
+                  child: const Text('Got It!'))
+              ]
+            );
+          }
+        );
+
+        debugPrint("continued");
 
       } 
       else if (e.code == 'email-already-in-use') {
@@ -125,6 +150,11 @@ class _SignUpPageState extends State<SignUpPage> {
       return;
     }
 
+    showDialog(
+      context: context,
+      builder:(context) => const Center(child: CircularProgressIndicator())  
+    );
+
     //And now creating the entity
     //Instance to the collection (pretty much the matrix 'users')
     if (userCredential != null && userCredential.user != null) {
@@ -137,8 +167,10 @@ class _SignUpPageState extends State<SignUpPage> {
         'email': "",
         'country': "",
         'phone': "",
-        'image': "",
+        'image': "https://static.vecteezy.com/system/resources/previews/020/765/399/non_2x/default-profile-account-unknown-icon-black-silhouette-free-vector.jpg",
       });
+
+      Navigator.pop(context);
 
       //If everything is ok, we navigate to the home screen
       Navigator.pushNamed(context, knowTheUserRoute);
@@ -197,7 +229,9 @@ class _SignUpPageState extends State<SignUpPage> {
                         //-----------Some space-----------
                         SizedBox(height: 0.02*h),
                         //-----------Create Account Button-----------
-                        Button (type: 'Miltos', label:'Create Account', onPressed: () async {createuser(context);}),
+                        Button (type: 'Miltos', label:'Create Account', onPressed: () async {
+                          createuser(context);
+                        }),
                       ]
                     )
                 );

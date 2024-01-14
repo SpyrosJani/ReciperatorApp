@@ -42,16 +42,22 @@ class _LoginHomePageState extends State<LoginHomePage> {
     const aux = "@reciperator.com";
     String usremail = '$username$aux';
     try {
+      showDialog(
+        context: context,
+        builder:(context) => const Center(child: CircularProgressIndicator())  
+      );
       await FirebaseAuth.instance.signInWithEmailAndPassword(
         email: usremail,
         password: psw,
       );
 
+      Navigator.pop(context);
       //If everything is ok, then we navigate to the home screen
       Navigator.pushNamed(context, homeRoute);
     } 
     on FirebaseAuthException catch (e) {
 
+      Navigator.pop(context);
       // ignore: use_build_context_synchronously
       showDialog(
         context: context, 
@@ -136,7 +142,9 @@ class _LoginHomePageState extends State<LoginHomePage> {
                       //-----------Some space-----------
                       SizedBox(height: 0.02*h),
                       //-----------Login Button-----------
-                      Button (type: 'Miltos', label:'Login', onPressed: () async {checkuser();}),
+                      Button (type: 'Miltos', label:'Login', onPressed: () async {
+                        checkuser();
+                      }),
                       //-----------Some space-----------
                       SizedBox(height: 0.02*h),
                       //-----------"Login to find the best recipes!" text-----------
