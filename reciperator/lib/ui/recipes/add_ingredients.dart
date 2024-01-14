@@ -261,7 +261,7 @@ class _AddIngredientsState extends State<AddIngredients> {
                           }
                           count++;
                         }
-
+                        
                         //Checking if the user gave ingredients
                         if(tosearch.isEmpty){
                           showDialog(

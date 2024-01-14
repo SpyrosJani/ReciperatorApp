@@ -21,6 +21,7 @@ Future<void> firebaseinitialization() async{
       appId: '1:1019351826894:android:678fc7a30532f4b9246b9f',
       messagingSenderId: '1019351826894',
       projectId: 'reciperator-app-main',
+      storageBucket: 'reciperator-app-main.appspot.com',
     ),
   );
 }
